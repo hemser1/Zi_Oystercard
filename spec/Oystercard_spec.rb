@@ -21,4 +21,22 @@ describe Oystercard do
     expect{ oystercard.deduct 7 }.to change{ oystercard.balance }.by -7
   end
 
+  context "when topped up" do
+    before do
+      maximum_balance = Oystercard::MAXIMUM_BALANCE
+      oystercard.top_up maximum_balance
+    end
+
+    it "can touch in" do
+      oystercard.touch_in
+      expect(oystercard).to be_in_journey
+    end
+
+    it "can touch out" do
+      oystercard.touch_in
+      oystercard.touch_out
+      expect(oystercard).not_to be_in_journey
+    end
+
+  end
 end
