@@ -1,7 +1,11 @@
-source 'https://rubygems.org' 
+source 'https://rubygems.org'
 
 ruby '2.6.3'
 
-group :development, :test do 
+gem 'rake'
+
+group :development, :test do
 gem 'rspec'
-end 
+gem 'simplecov', require: false
+gem 'simplecov-console', require: false
+end
