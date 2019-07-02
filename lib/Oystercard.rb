@@ -11,11 +11,14 @@ end
 
 class Journey
 
+  MINIMUM_CHARGE = 1
+  PENALTY_CHARGE = 6
   attr_accessor :exit_station
 
-  def initialize(station)
-    @entry_station = station
-    @exit_station = nil
+
+  def initialize(entry_station, exit_station = nil)
+    @entry_station = entry_station
+    @exit_station = exit_station
   end
 
   def record
@@ -23,8 +26,9 @@ class Journey
   end
 
   def fare
-
+    @entry_station.nil? ? PENALTY_CHARGE : MINIMUM_CHARGE
   end
+
 end
 
 #########################
@@ -33,15 +37,12 @@ end
 class Oystercard
 
   MAXIMUM_BALANCE = 90
-  MINIMUM_CHARGE = 1
-  COST = MINIMUM_CHARGE
 
-  attr_reader :balance, :entry_station
+  attr_reader :balance
 
   def initialize(balance=0)
     @balance = balance
     @in_journey = false
-    @entry_station = nil
     @history = []
   end
 
@@ -51,16 +52,16 @@ class Oystercard
   end
 
   def touch_in(entry_station = "default")
-    raise "Minimum balance is 1£" if @balance < MINIMUM_CHARGE
-    @entry_station = entry_station
+    charge_penatly if @in_journey != false
+    raise "Minimum balance is 1£" if @balance < Journey::MINIMUM_CHARGE
     @in_journey = Journey.new(entry_station)
   end
 
   def touch_out(exit_station = "default")
-    deduct(COST)
+    @in_journey = Journey.new(nil) if @in_journey == false
+    deduct(@in_journey.fare)
     @in_journey.exit_station = exit_station
-    @history << @in_journey.record
-    @in_journey = false
+    add_history
   end
 
   def in_journey?
@@ -70,19 +71,20 @@ class Oystercard
   def print_history
     @history
   end
+
 private
+
   def deduct(amount)
     @balance -= amount
   end
 
+  def add_history
+    @history << @in_journey.record
+    @in_journey = false
+  end
+
+  def charge_penatly
+      deduct(Journey::PENALTY_CHARGE)
+      add_history
+  end
 end
-
-
-oc = Oystercard.new
-
-oc.top_up(90)
-
-oc.touch_in("Mile End")
-oc.touch_out("Aldgate East")
-
-p oc.print_history

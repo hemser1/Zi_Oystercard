@@ -16,7 +16,7 @@ describe Oystercard do
   let(:entry_station) { double :entry_station }
   let (:exit_station) { double :exit_station }
   maximum_balance = Oystercard::MAXIMUM_BALANCE
-  minimum_balance = Oystercard::MINIMUM_CHARGE
+  minimum_balance = Journey::MINIMUM_CHARGE
 
   it "should have a balance" do
     expect(oystercard.balance).to eq(0)
@@ -36,14 +36,6 @@ describe Oystercard do
   it "has no journeys in history by default" do
     expect(oystercard.print_history.length).to eq 0
   end
-
-
-
-  # it "deducts money from the balance" do
-  #   oystercard.top_up(20)
-  #   expect{ oystercard.deduct 7 }.to change{ oystercard.balance }.by -7
-  # end
-
 
   context "when topped up" do
     before do
@@ -67,15 +59,14 @@ describe Oystercard do
 
     it "deducts money" do
       oystercard.touch_in
-      cost = Oystercard::COST
-      expect{ oystercard.touch_out}.to change{ oystercard.balance }.by -cost
+      cost = minimum_balance
+      expect{ oystercard.touch_out }.to change{ oystercard.balance }.by -cost
     end
 
-    it "will remember the touch in entry_station" do
-      oystercard.touch_in(entry_station)
-      expect(oystercard.entry_station).to eq entry_station
+    it "deducts penalty charge with no touch out" do
+    oystercard.touch_in
+    expect{ oystercard.touch_in }.to change{ oystercard.balance }.by -Journey::PENALTY_CHARGE
     end
-
   end
 
   context "when a journey has been completed" do
